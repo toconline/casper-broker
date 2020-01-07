@@ -78,11 +78,9 @@ class CasperBroker extends PolymerElement {
    * @param {String} cookieName The cookie that we'll looking for.
    */
   __readCookieValue (cookieName) {
-    return document.cookie
-      .split(';')
-      .map(cookie => cookie.trim().split('='))
-      .find(splitCookie => cookieName === splitCookie[0])
-      .pop();
+    const regexMatches = document.cookie.match(new RegExp(`${cookieName}=(\\w+);`));
+
+    return regexMatches ? regexMatches.pop() : '';
   }
 }
 
