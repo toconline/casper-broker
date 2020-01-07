@@ -1,7 +1,7 @@
 {
   "name": "@casper2020/casper-broker",
   "description": "Component that allows the interaction with the Broker API",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "dependencies": {
     "@polymer/polymer": "^3.0.0"
   }
