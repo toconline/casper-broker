@@ -38,7 +38,7 @@ class CasperBroker extends PolymerElement {
       })
     };
 
-    // Only include the body unless we're dealing GET and HEAD methods. Otherwise the fetch will error out.
+    // Include the body unless we're dealing GET and HEAD methods, otherwise the fetch method call will error out.
     if (!['GET', 'HEAD'].includes(method) && !!requestBody) {
       fetchSettings.body = JSON.stringify(requestBody);
     }
