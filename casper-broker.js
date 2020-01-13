@@ -50,7 +50,7 @@ class CasperBroker extends PolymerElement {
     try {
       setTimeout(() => { abortController.abort(); }, timeoutInMilliseconds);
 
-      const fetchResponse = await fetch(`${this.apiBaseUrl}/${requestUrl}`, fetchSettings);
+      const fetchResponse = await fetch(encodeURI(`${this.apiBaseUrl}/${requestUrl}`), fetchSettings);
 
       return await fetchResponse.json();
     } catch (exception) {
