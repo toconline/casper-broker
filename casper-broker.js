@@ -17,10 +17,10 @@ class CasperBroker extends PolymerElement {
     };
   }
 
-  async get (url, timeoutInMilliseconds) { return this.__formatResponse(await this.__request('GET', url, undefined, timeoutInMilliseconds)); }
-  async post (url, body, timeoutInMilliseconds) { return this.__formatResponse(await this.__request('POST', url, body, timeoutInMilliseconds)); }
-  async patch (url, body, timeoutInMilliseconds) { return this.__formatResponse(await this.__request('PATCH', url, body, timeoutInMilliseconds)); }
-  async delete (url, body, timeoutInMilliseconds) { return this.__formatResponse(await this.__request('DELETE', url, body, timeoutInMilliseconds)); }
+  async get (url, timeoutInMilliseconds, urlAlreadyEncoded = false) { return this.__formatResponse(await this.__request('GET', url, undefined, timeoutInMilliseconds, urlAlreadyEncoded)); }
+  async post (url, body, timeoutInMilliseconds, urlAlreadyEncoded = false) { return this.__formatResponse(await this.__request('POST', url, body, timeoutInMilliseconds, urlAlreadyEncoded)); }
+  async patch (url, body, timeoutInMilliseconds, urlAlreadyEncoded = false) { return this.__formatResponse(await this.__request('PATCH', url, body, timeoutInMilliseconds, urlAlreadyEncoded)); }
+  async delete (url, body, timeoutInMilliseconds, urlAlreadyEncoded = false) { return this.__formatResponse(await this.__request('DELETE', url, body, timeoutInMilliseconds, urlAlreadyEncoded)); }
 
   /**
    * Performs an HTTP request to the ngix-broker API.
@@ -29,8 +29,9 @@ class CasperBroker extends PolymerElement {
    * @param {String} requestUrl The request's URL.
    * @param {Object} requestBody The request's body.
    * @param {Number} timeoutInMilliseconds The request's timeout in milliseconds.
+   * @param {Boolean} urlAlreadyEncoded This flag states if the URL is already encoded or not.
    */
-  async __request (method, requestUrl, requestBody, timeoutInMilliseconds) {
+  async __request (method, requestUrl, requestBody, timeoutInMilliseconds, urlAlreadyEncoded) {
     const abortController = new AbortController();
 
     const fetchSettings = {
@@ -50,7 +51,9 @@ class CasperBroker extends PolymerElement {
     try {
       setTimeout(() => { abortController.abort(); }, timeoutInMilliseconds);
 
-      const fetchResponse = await fetch(encodeURI(`${this.apiBaseUrl}/${requestUrl}`), fetchSettings);
+      const fetchResponse = urlAlreadyEncoded
+        ? await fetch(`${this.apiBaseUrl}/${requestUrl}`, fetchSettings)
+        : await fetch(encodeURI(`${this.apiBaseUrl}/${requestUrl}`), fetchSettings);
 
       return await fetchResponse.json();
     } catch (exception) {
