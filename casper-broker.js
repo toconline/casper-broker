@@ -76,11 +76,11 @@ class CasperBroker extends PolymerElement {
     if (response.data.constructor.name === 'Object') {
       return !response.hasOwnProperty('meta')
         ? { data: { id: response.data.id, ...response.data.attributes } }
-        : { data: { id: response.data.id, ...response.data.attributes }, meta: { ...response.meta } };
+        : { data: { id: response.data.id, ...response.data.attributes }, meta: response.meta };
     } else {
       return !response.hasOwnProperty('meta')
         ? { data: response.data.map(item => ({ id: item.id, ...item.attributes })) }
-        : { data: response.data.map(item => ({ id: item.id, ...item.attributes })), meta: { ...response.meta } };
+        : { data: response.data.map(item => ({ id: item.id, ...item.attributes })), meta: response.meta };
     }
   }
 
