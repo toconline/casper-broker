@@ -20,12 +20,12 @@ class CasperBroker extends PolymerElement {
   async getRaw (url, timeoutInMilliseconds, urlAlreadyEncoded = false) { return await this.__request('GET', url, undefined, timeoutInMilliseconds, urlAlreadyEncoded); }
   async postRaw (url, body, timeoutInMilliseconds, urlAlreadyEncoded = false) { return await this.__request('POST', url, body, timeoutInMilliseconds, urlAlreadyEncoded); }
   async patchRaw (url, body, timeoutInMilliseconds, urlAlreadyEncoded = false) { return await this.__request('PATCH', url, body, timeoutInMilliseconds, urlAlreadyEncoded); }
-  async deleteRaw (url, body, timeoutInMilliseconds, urlAlreadyEncoded = false) { return await this.__request('DELETE', url, body, timeoutInMilliseconds, urlAlreadyEncoded); }
+  async deleteRaw (url, timeoutInMilliseconds, urlAlreadyEncoded = false) { return await this.__request('DELETE', url, undefined, timeoutInMilliseconds, urlAlreadyEncoded); }
 
   async get (url, timeoutInMilliseconds, urlAlreadyEncoded = false) { return this.__formatResponse(await this.__request('GET', url, undefined, timeoutInMilliseconds, urlAlreadyEncoded)); }
   async post (url, body, timeoutInMilliseconds, urlAlreadyEncoded = false) { return this.__formatResponse(await this.__request('POST', url, body, timeoutInMilliseconds, urlAlreadyEncoded)); }
   async patch (url, body, timeoutInMilliseconds, urlAlreadyEncoded = false) { return this.__formatResponse(await this.__request('PATCH', url, body, timeoutInMilliseconds, urlAlreadyEncoded)); }
-  async delete (url, body, timeoutInMilliseconds, urlAlreadyEncoded = false) { return this.__formatResponse(await this.__request('DELETE', url, body, timeoutInMilliseconds, urlAlreadyEncoded)); }
+  async delete (url, timeoutInMilliseconds, urlAlreadyEncoded = false) { return this.__formatResponse(await this.__request('DELETE', url, undefined, timeoutInMilliseconds, urlAlreadyEncoded)); }
 
   /**
    * Performs an HTTP request to the ngix-broker API.
@@ -50,7 +50,7 @@ class CasperBroker extends PolymerElement {
     };
 
     // Include the body unless we're dealing GET and HEAD methods, otherwise the fetch method call will error out.
-    if (!['GET', 'HEAD'].includes(method) && !!body) {
+    if (!['GET', 'HEAD', 'DELETE'].includes(method) && !!body) {
       fetchSettings.body = JSON.stringify(body);
     }
 
