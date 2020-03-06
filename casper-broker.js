@@ -27,6 +27,14 @@ class CasperBroker extends PolymerElement {
   async patch (url, body, timeoutInMilliseconds, urlAlreadyEncoded = false) { return this.__formatResponse(await this.__request('PATCH', url, body, timeoutInMilliseconds, urlAlreadyEncoded)); }
   async delete (url, timeoutInMilliseconds, urlAlreadyEncoded = false) { return this.__formatResponse(await this.__request('DELETE', url, undefined, timeoutInMilliseconds, urlAlreadyEncoded)); }
 
+  abortPendingRequest () {
+    // Abort a previous pending request.
+    if (this.__abortRequestController) {
+      this.__abortRequestController.abort();
+      this.__clearPendingRequestControlVariables();
+    }
+  }
+
   /**
    * Performs an HTTP request to the ngix-broker API.
    *
@@ -39,10 +47,10 @@ class CasperBroker extends PolymerElement {
   async __request (method, url, body, timeoutInMilliseconds, urlAlreadyEncoded) {
     if (!timeoutInMilliseconds) throw { error: 'The parameter timeout is required.' };
 
-    const abortController = new AbortController();
+    this.__abortRequestController = new AbortController();
     const fetchSettings = {
       method: method,
-      signal: abortController.signal,
+      signal: this.__abortRequestController.signal,
       headers: new Headers({
         'Authorization': `Bearer ${this.__readCookieValue('casper_session')}`,
         'Content-Type': 'application/vnd.api+json'
@@ -55,15 +63,20 @@ class CasperBroker extends PolymerElement {
     }
 
     try {
-      setTimeout(() => abortController.abort(), timeoutInMilliseconds);
+      this.__abortRequestTimeout = setTimeout(() => this.abortPendingRequest(), timeoutInMilliseconds);
 
-      const fetchResponse = urlAlreadyEncoded
+      const response = urlAlreadyEncoded
         ? await fetch(`${this.apiBaseUrl}/${url}`, fetchSettings)
         : await fetch(encodeURI(`${this.apiBaseUrl}/${url}`), fetchSettings);
 
-      return await fetchResponse.json();
+      this.__clearPendingRequestControlVariables();
+
+      return await response.json();
     } catch (exception) {
-      console.error(exception);
+      exception.name !== 'AbortError'
+        ? console.error(exception)
+        : console.error('The request was aborted by the component either by timeout or because there was a pending request.');
+
       throw exception;
     }
   }
@@ -103,6 +116,15 @@ class CasperBroker extends PolymerElement {
     const regexMatches = document.cookie.match(new RegExp(`${cookieName}=(\\w+);`));
 
     return regexMatches ? regexMatches.pop() : '';
+  }
+
+  /**
+   * Removes the reference to the abort controller which is no longer needed and removes the timeout that was going to cancel
+   * the request for exceeding the permitted time.
+   */
+  __clearPendingRequestControlVariables () {
+    this.__abortRequestController = undefined;
+    clearTimeout(this.__abortRequestTimeout);
   }
 }
 
