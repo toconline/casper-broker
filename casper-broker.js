@@ -27,13 +27,7 @@ class CasperBroker extends PolymerElement {
   async patch (url, body, timeoutInMilliseconds, urlAlreadyEncoded = false) { return this.__formatResponse(await this.__request('PATCH', url, body, timeoutInMilliseconds, urlAlreadyEncoded)); }
   async delete (url, timeoutInMilliseconds, urlAlreadyEncoded = false) { return this.__formatResponse(await this.__request('DELETE', url, undefined, timeoutInMilliseconds, urlAlreadyEncoded)); }
 
-  abortPendingRequest () {
-    // Abort a previous pending request.
-    if (this.__abortRequestController) {
-      this.__abortRequestController.abort();
-      this.__clearPendingRequestControlVariables();
-    }
-  }
+  abortPendingRequest () { }
 
   /**
    * Performs an HTTP request to the ngix-broker API.
@@ -45,40 +39,26 @@ class CasperBroker extends PolymerElement {
    * @param {Boolean} urlAlreadyEncoded This flag states if the URL is already encoded or not.
    */
   async __request (method, url, body, timeoutInMilliseconds, urlAlreadyEncoded) {
-    if (!timeoutInMilliseconds) throw { error: 'The parameter timeout is required.' };
+    return new Promise((resolve, reject) => {
+      if (!timeoutInMilliseconds) throw { error: 'The parameter timeout is required.' };
 
-    this.__abortRequestController = new AbortController();
-    const fetchSettings = {
-      method: method,
-      signal: this.__abortRequestController.signal,
-      headers: new Headers({
-        'Authorization': `Bearer ${this.__readCookieValue('casper_session')}`,
-        'Content-Type': 'application/vnd.api+json'
-      })
-    };
+      const encodedUrl = urlAlreadyEncoded
+        ? `${this.apiBaseUrl}/${url}`
+        : encodeURI(`${this.apiBaseUrl}/${url}`);
 
-    // Include the body unless we're dealing GET and HEAD methods, otherwise the fetch method call will error out.
-    if (!['GET', 'HEAD', 'DELETE'].includes(method) && !!body) {
-      fetchSettings.body = JSON.stringify(body);
-    }
+      const request = new XMLHttpRequest();
+      request.open(method, encodedUrl);
+      request.setRequestHeader('Content-Type', 'application/vnd.api+json');
+      request.setRequestHeader('Authorization', `Bearer ${this.__readCookieValue('casper_session')}`);
+      request.timeout = timeoutInMilliseconds;
+      request.onerror = () => reject({});
+      request.ontimeout = () => reject({});
+      request.onload = event => resolve(JSON.parse(event.target.response));
 
-    try {
-      this.__abortRequestTimeout = setTimeout(() => this.abortPendingRequest(), timeoutInMilliseconds);
-
-      const response = urlAlreadyEncoded
-        ? await fetch(`${this.apiBaseUrl}/${url}`, fetchSettings)
-        : await fetch(encodeURI(`${this.apiBaseUrl}/${url}`), fetchSettings);
-
-      this.__clearPendingRequestControlVariables();
-
-      return await response.json();
-    } catch (exception) {
-      exception.name !== 'AbortError'
-        ? console.error(exception)
-        : console.error('The request was aborted by the component either by timeout or because there was a pending request.');
-
-      throw exception;
-    }
+      !['POST', 'PATCH'].includes(method) || !body
+        ? request.send()
+        : request.send(JSON.stringify(body));
+    });
   }
 
   /**
