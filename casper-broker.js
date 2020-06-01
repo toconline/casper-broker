@@ -49,7 +49,7 @@ class CasperBroker extends PolymerElement {
       const request = new XMLHttpRequest();
       request.open(method, encodedUrl);
       request.setRequestHeader('Content-Type', 'application/vnd.api+json');
-      request.setRequestHeader('Authorization', `Bearer ${this.__readCookieValue('casper_session')}`);
+      request.setRequestHeader('Authorization', `Bearer ${app.socket.sessionCookie}`);
       request.timeout = timeoutInMilliseconds;
       request.onerror = () => reject({});
       request.ontimeout = () => reject({});
@@ -87,16 +87,6 @@ class CasperBroker extends PolymerElement {
       : { ...response, data: response.data.map(item => ({ id: item.id, ...item.attributes, relationships: item.relationships })) };
   }
 
-  /**
-   * This method returns the value of an existing cookie.
-   *
-   * @param {String} cookieName The cookie that we'll looking for.
-   */
-  __readCookieValue (cookieName) {
-    const regexMatches = document.cookie.match(new RegExp(`${cookieName}=(\\w+);`));
-
-    return regexMatches ? regexMatches.pop() : '';
-  }
 
   /**
    * Removes the reference to the abort controller which is no longer needed and removes the timeout that was going to cancel
