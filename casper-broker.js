@@ -54,11 +54,15 @@ class CasperBroker extends PolymerElement {
       request.onerror = () => reject({});
       request.ontimeout = () => reject({});
       request.onload = event => {
-        const parsedResponse = JSON.parse(event.target.response);
-
-        event.target.status.toString().startsWith('2')
-          ? resolve(parsedResponse)
-          : reject(parsedResponse);
+        try {
+          const parsedResponse = JSON.parse(event.target.response);
+          event.target.status.toString().startsWith('2')
+            ? resolve(parsedResponse)
+            : reject(parsedResponse);
+        } catch (error) {
+          // If we cant parse the response just reject with the error
+          reject(error);
+        }
       };
 
       !['POST', 'PATCH'].includes(method) || !body
