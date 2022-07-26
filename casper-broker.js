@@ -1,6 +1,6 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 
-class CasperBroker extends PolymerElement {
+export class CasperBroker extends PolymerElement {
 
   static get template () {
     return html``;
