@@ -87,8 +87,14 @@ export class CasperBroker extends PolymerElement {
 
     // Flatten the nginx-broker response.
     return response.data.constructor.name === 'Object'
-      ? { ...response, data: { id: response.data.id, ...response.data.attributes, relationships: response.data.relationships } }
-      : { ...response, data: response.data.map(item => ({ id: item.id, ...item.attributes, relationships: item.relationships })) };
+      ? { ...response,
+          id: response.data.id,
+          type: response.data.type,
+          data: { id: response.data.id, ...response.data.attributes, relationships: response.data.relationships } }
+      : { ...response,
+          id: response.data.id,
+          type: response.data.type,
+          data: response.data.map(item => ({ id: item.id, ...item.attributes, relationships: item.relationships })) };
   }
 
 
