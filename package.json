@@ -1,5 +1,5 @@
 {
-  "name": "@cloudware-casper/casper-broker",
+  "name": "@toconline/casper-broker",
   "description": "Component that allows the interaction with the Broker API",
   "version": "1.9.4",
   "publishConfig": {
